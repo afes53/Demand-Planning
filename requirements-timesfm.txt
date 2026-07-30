@@ -1,0 +1,2 @@
+# TimesFM 2.5 desteği için:
+timesfm[torch]>=2.0.0
