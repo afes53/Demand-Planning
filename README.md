@@ -1,86 +1,38 @@
-# Demand Planning AI — Streamlit
+# Demand Planning AI — Dashboard v2
 
-Bu uygulama:
+Bu sürümde demo ayar ekranı kaldırılmıştır. Ana akış:
 
-- CSV/XLSX/Parquet perakende verisi yükler,
-- sütunları standart şemaya eşler,
-- stokout dönemlerindeki gözlenemeyen talebi düzeltir,
-- Chronos veya opsiyonel TimesFM ile zero-shot tahmin üretir,
-- tarihsel kayıp satış ve kayıp ciroyu hesaplar,
-- stok açığı ve ikmal önerisi oluşturur,
-- fiyat/ciro bazlı öncelik verir,
-- ürün ABC analizi yapar,
-- sonuçları CSV/ZIP olarak indirir.
+1. Örnek veri setini indir veya kendi CSV/XLSX/Parquet dosyanı yükle.
+2. Satış, stok, fiyat ve kimlik sütunlarını eşleştir.
+3. Zero-shot tahmin ve stok analizlerini çalıştır.
+4. Karar destek dashboardunda ikmal, ciro riski ve ABC sonuçlarını incele.
 
-Ayrıca FreshRetailNet demo modu bulunur. Bu modda gerçek adet, fiyat ve stok bulunmadığı için demo amaçlı global adet katsayısı, ürün fiyatı ve stok senaryosu oluşturulur.
+## Dashboard özellikleri
 
-## Dosyalar
+- Geçmiş satış + düzeltilmiş talep + gelecek tahmini çizgisi
+- Geçmiş stok + tahmini kalan stok grafiği
+- Risk seviyesi donut grafiği
+- Stokout oranı ve iş etkisi baloncuk grafiği
+- En yüksek ikmal ihtiyacı yatay bar grafiği
+- Mağaza–ürün ikmal heatmap'i
+- Tarihsel ve gelecek ciro riski karşılaştırması
+- ABC treemap ve donut grafikleri
+- Sadeleştirilmiş Türkçe tablolar
+- Tüm sonuçları ZIP olarak indirme
 
-- `app.py`: Streamlit arayüzü
-- `zero_shot_demand_mvp_core_generic_v2.py`: veri pipeline'ı ve tahmin modelleri
-- `demand_business_analytics_fixed.py`: stokout, ciro, ikmal ve ABC analizleri
-- `freshretail_demo_preprocessing.py`: yalnızca FreshRetailNet demo dönüşümleri
-- `requirements.txt`: temel bağımlılıklar
-- `requirements-timesfm.txt`: opsiyonel TimesFM bağımlılığı
-
-## Yerelde çalıştırma
-
-```bash
-python -m venv .venv
-```
-
-Windows:
-
-```bash
-.venv\Scripts\activate
-```
-
-macOS/Linux:
-
-```bash
-source .venv/bin/activate
-```
-
-Kurulum:
+## Kurulum
 
 ```bash
 pip install -r requirements.txt
-```
-
-Çalıştırma:
-
-```bash
 streamlit run app.py
 ```
 
-TimesFM desteği de gerekiyorsa:
+TimesFM desteği:
 
 ```bash
 pip install -r requirements-timesfm.txt
 ```
 
-## Streamlit Community Cloud
+## Önemli
 
-Repo kökünde `app.py` ve `requirements.txt` bulunmalıdır. Uygulamanın ilk model çalıştırmasında model dosyaları Hugging Face üzerinden indirilir. CPU ortamında önce `Chronos Bolt Small` ve düşük seri sayısıyla deneme yapılması önerilir.
-
-## Şirket verisi için beklenen temel alanlar
-
-Zorunlu:
-
-- tarih
-- mağaza ID
-- ürün ID
-- satış
-- stok
-
-Opsiyonel:
-
-- fiyat
-- kategori 1/2/3
-- stokout bayrağı
-
-Stok sütunu yoksa uygulamada “Stok sütunum yok” seçilebilir; bu durumda stokout bayrağı gerekir ve gerçek ikmal miktarı hesaplanamaz.
-
-## Önemli ayrım
-
-FreshRetailNet demo modundaki adet, fiyat ve stoklar gerçek kayıt değildir. Şirket verisi modunda uygulama doğrudan yüklenen gerçek satış, fiyat ve stok değerlerini kullanır.
+Gelecek tahminleri her zaman kullanıcının yüklediği veri setindeki satış geçmişinden üretilir. Stok sütunu varsa aynı veri setindeki son stok seviyesi kullanılarak tahmini kalan stok, stokout tarihi ve ikmal ihtiyacı hesaplanır.
