@@ -10,7 +10,13 @@ import time
 
 import numpy as np
 import pandas as pd
-import torch
+
+def _get_torch():
+    # PyTorch büyük bir bağımlılıktır. Uygulama açılırken değil,
+    # yalnızca kullanıcı tahmin modelini çalıştırdığında yüklenir.
+    import torch
+    return torch
+
 
 
 DataFrequency = Literal["hourly", "daily", "monthly"]
@@ -769,7 +775,10 @@ class ChronosForecaster(BaseZeroShotForecaster):
     def __init__(self, model_id: str, device: Optional[str] = None) -> None:
         self.model_id = model_id
         self.model_name = model_id.split("/")[-1]
-        self.device = device or ("cuda" if torch.cuda.is_available() else "cpu")
+        torch = _get_torch()
+        self.device = device or (
+            "cuda" if torch.cuda.is_available() else "cpu"
+        )
 
         if model_id == "amazon/chronos-2":
             from chronos import Chronos2Pipeline
@@ -849,6 +858,7 @@ class TimesFMForecaster(BaseZeroShotForecaster):
         self.max_context = int(max_context)
         self.max_horizon = int(max_horizon)
 
+        torch = _get_torch()
         torch.set_float32_matmul_precision("high")
         print(f"{self.model_name} yükleniyor | checkpoint={self.model_id}")
         self.model = timesfm.TimesFM_2p5_200M_torch.from_pretrained(self.model_id)
@@ -1243,6 +1253,7 @@ def compare_zero_shot_models(
             if forecaster is not None:
                 del forecaster
             gc.collect()
+            torch = _get_torch()
             if torch.cuda.is_available():
                 torch.cuda.empty_cache()
 
