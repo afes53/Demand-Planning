@@ -2190,19 +2190,12 @@ def page_demand_forecast() -> None:
         go.Scatter(
             x=history_series["date"],
             y=history_series["sales"],
-            name="Gerçek satış",
+            name="Geçmiş gerçek satış",
             mode="lines",
-        )
-    )
-    figure.add_trace(
-        go.Scatter(
-            x=history_series["date"],
-            y=history_series[
-                "demand_adjusted"
-            ],
-            name="Düzeltilmiş talep",
-            mode="lines",
-            line={"dash": "dot"},
+            line={
+                "color": "#64748B",
+                "width": 2,
+            },
         )
     )
     figure.add_trace(
@@ -2211,7 +2204,10 @@ def page_demand_forecast() -> None:
             y=future_series["forecast_upper"],
             name="Üst güven sınırı",
             mode="lines",
-            line={"width": 0},
+            line={
+                "color": "rgba(245, 158, 11, 0)",
+                "width": 0,
+            },
             showlegend=False,
         )
     )
@@ -2219,109 +2215,58 @@ def page_demand_forecast() -> None:
         go.Scatter(
             x=future_series["date"],
             y=future_series["forecast_lower"],
-            name="Ampirik güven aralığı",
+            name="Tahmin aralığı",
             mode="lines",
             fill="tonexty",
-            line={"width": 0},
+            fillcolor="rgba(245, 158, 11, 0.14)",
+            line={
+                "color": "rgba(245, 158, 11, 0)",
+                "width": 0,
+            },
+            showlegend=False,
         )
     )
     figure.add_trace(
         go.Scatter(
             x=future_series["date"],
             y=future_series["predictions"],
-            name=st.session_state.selected_model_name,
+            name="Tahmin edilen talep",
             mode="lines+markers",
-        )
-    )
-    figure.add_trace(
-        go.Scatter(
-            x=future_series["date"],
-            y=future_series["naive_forecast"],
-            name="Geçen dönem benchmark",
-            mode="lines",
-            line={"dash": "dash"},
+            line={
+                "color": "#F59E0B",
+                "width": 3,
+            },
+            marker={"size": 6},
         )
     )
     figure.add_trace(
         go.Scatter(
             x=detail_series["date"],
             y=detail_series["fulfilled_demand"],
-            name="Stokla karşılanabilecek satış",
+            name="Stokla karşılanabilecek tahmini satış",
             mode="lines+markers",
             line={
                 "color": "#16A34A",
                 "width": 3,
             },
+            marker={"size": 6},
         )
     )
-    figure.add_trace(
-        go.Bar(
-            x=detail_series["date"],
-            y=detail_series["period_shortage"],
-            name="Karşılanamayan talep",
-            marker_color="#DC2626",
-            opacity=0.55,
-        )
-    )
-    figure.add_trace(
-        go.Bar(
-            x=detail_series["date"],
-            y=detail_series[
-                "effective_incoming_stock"
-            ],
-            name="Gelen planlı sevkiyat",
-            marker_color="#2563EB",
-            opacity=0.35,
-        )
-    )
-
-    stockout_points = history_series.loc[
-        history_series["is_stockout"]
-        .astype(bool)
-    ]
-    if not stockout_points.empty:
-        figure.add_trace(
-            go.Scatter(
-                x=stockout_points["date"],
-                y=stockout_points["sales"],
-                name="Stokta yok",
-                mode="markers",
-                marker={
-                    "symbol": "x",
-                    "size": 9,
-                },
-            )
-        )
-
-    if "promotion" in history_series.columns:
-        promotion_points = history_series.loc[
-            history_series["promotion"]
-            .astype("boolean")
-            .fillna(False)
-        ]
-        if not promotion_points.empty:
-            figure.add_trace(
-                go.Scatter(
-                    x=promotion_points["date"],
-                    y=promotion_points["sales"],
-                    name="Promosyon",
-                    mode="markers",
-                    marker={
-                        "symbol": "diamond",
-                        "size": 8,
-                    },
-                )
-            )
 
     figure.update_layout(
-        title=(
-            "Geçmiş satış, gelecek talep ve "
-            "stokla karşılanabilecek satış"
-        ),
+        title="Geçmiş satış ve gelecekte karşılanabilecek talep",
         xaxis_title="Tarih",
         yaxis_title="Adet",
         hovermode="x unified",
-        barmode="overlay",
+        template="plotly_white",
+        legend={
+            "orientation": "h",
+            "yanchor": "bottom",
+            "y": 1.02,
+            "xanchor": "left",
+            "x": 0,
+        },
+        margin={"t": 95, "r": 20, "b": 45, "l": 45},
     )
     st.plotly_chart(
         figure,
@@ -2332,6 +2277,46 @@ def page_demand_forecast() -> None:
         "gün başı stok + o gün gelen planlı sevkiyat). "
         "Karşılanamayan talep, stok yetersizliği nedeniyle satışa "
         "dönüşemeyen tahmini taleptir."
+    )
+
+    flow_figure = go.Figure()
+    flow_figure.add_trace(
+        go.Bar(
+            x=detail_series["date"],
+            y=detail_series[
+                "effective_incoming_stock"
+            ],
+            name="Gelen planlı sevkiyat",
+            marker_color="#2563EB",
+        )
+    )
+    flow_figure.add_trace(
+        go.Bar(
+            x=detail_series["date"],
+            y=detail_series["period_shortage"],
+            name="Karşılanamayan talep",
+            marker_color="#DC2626",
+        )
+    )
+    flow_figure.update_layout(
+        title="Planlı sevkiyat ve karşılanamayan talep",
+        xaxis_title="Tarih",
+        yaxis_title="Adet",
+        hovermode="x unified",
+        barmode="group",
+        template="plotly_white",
+        legend={
+            "orientation": "h",
+            "yanchor": "bottom",
+            "y": 1.02,
+            "xanchor": "left",
+            "x": 0,
+        },
+        margin={"t": 95, "r": 20, "b": 45, "l": 45},
+    )
+    st.plotly_chart(
+        flow_figure,
+        use_container_width=True,
     )
 
     stock_figure = go.Figure()
