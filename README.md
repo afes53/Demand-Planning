@@ -16,8 +16,8 @@ benchmark olarak kullanılır.
 
 ## Canlı demo
 
-- Streamlit: `STREAMLIT_DEMO_LINKINI_BURAYA_EKLE`
-- GitHub: `GITHUB_REPO_LINKINI_BURAYA_EKLE`
+- Streamlit: [`STREAMLIT_DEMO_LINKI`](https://irrs8jkrjx2awizgo7lzgo.streamlit.app/)
+- GitHub: [`GITHUB_REPO_LINKI`](https://github.com/afes53/Demand-Planning)
 
 Repo ve uygulama bağlantılarını yayınladıktan sonra gizli sekmede test edin.
 
