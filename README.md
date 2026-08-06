@@ -60,31 +60,6 @@ Raporlama ve Dışa Aktarım
 Tahmini** ve **Tahmin Performansı** sayfalarını tamamlayın. Stok ve dağıtım
 sayfaları, talep tahmini çalıştırıldıktan sonra anlamlı sonuç üretir.
 
-## Ekran görüntüsü hazırlama rehberi
-
-Ekran görüntülerini `docs/screenshots/` klasörüne aşağıdaki adlarla ekleyin.
-README içindeki görseller otomatik olarak görünür hale gelir.
-
-| Sayfa | Dosya adı |
-|---|---|
-| Ana Sayfa | `01_ana_sayfa.png` |
-| Veri Yükleme | `02_veri_yukleme.png` |
-| Veri Kalitesi | `03_veri_kalitesi.png` |
-| Talep Tahmini | `04_talep_tahmini.png` |
-| Tahmin Performansı | `05_tahmin_performansi.png` |
-| Stok Riskleri | `06_stok_riskleri.png` |
-| Stok Dağıtım Önerileri | `07_stok_dagitim_onerileri.png` |
-| Mağaza / Ürün Detayı | `08_magaza_urun_detayi.png` |
-| ABC–XYZ Önceliklendirme | `09_abc_xyz.png` |
-| Senaryo Analizi | `10_senaryo_analizi.png` |
-| Manuel Düzeltme ve FVA | `11_manuel_duzeltme_fva.png` |
-| Raporlar | `12_raporlar.png` |
-| Model ve Veri Bilgileri | `13_model_veri_bilgileri.png` |
-
-Tutarlı bir görünüm için ekran görüntülerini aynı tarayıcı genişliğinde,
-tercihen 1440 px veya daha geniş olarak alın. Gerçek şirket verisi
-kullanıyorsanız mağaza, ürün, fiyat ve ciro bilgilerini maskeleyin.
-
 ## Sayfa rehberi
 
 ### 1. Ana Sayfa
