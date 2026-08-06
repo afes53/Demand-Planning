@@ -10,8 +10,8 @@ Streamlit tabanlı karar destek uygulaması.
 
 ## Canlı demo
 
-- Streamlit: https://irrs8jkrjx2awizgo7lzgo.streamlit.app
-- GitHub: https://github.com/afes53/Demand-Planning
+- Streamlit: `STREAMLIT_DEMO_LINKINI_BURAYA_EKLE`
+- GitHub: `GITHUB_REPO_LINKINI_BURAYA_EKLE`
 
 Repo public yapıldıktan sonra bağlantıları gizli sekmede test edin.
 

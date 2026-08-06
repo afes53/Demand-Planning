@@ -10,12 +10,11 @@ import time
 
 import numpy as np
 import pandas as pd
-
 def _get_torch():
-    # PyTorch büyük bir bağımlılıktır. Uygulama açılırken değil,
-    # yalnızca kullanıcı tahmin modelini çalıştırdığında yüklenir.
+    """PyTorch'u yalnızca tahmin modeli çalıştırıldığında yükler."""
     import torch
     return torch
+
 
 
 
