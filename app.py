@@ -2242,6 +2242,38 @@ def page_demand_forecast() -> None:
             line={"dash": "dash"},
         )
     )
+    figure.add_trace(
+        go.Scatter(
+            x=detail_series["date"],
+            y=detail_series["fulfilled_demand"],
+            name="Stokla karşılanabilecek satış",
+            mode="lines+markers",
+            line={
+                "color": "#16A34A",
+                "width": 3,
+            },
+        )
+    )
+    figure.add_trace(
+        go.Bar(
+            x=detail_series["date"],
+            y=detail_series["period_shortage"],
+            name="Karşılanamayan talep",
+            marker_color="#DC2626",
+            opacity=0.55,
+        )
+    )
+    figure.add_trace(
+        go.Bar(
+            x=detail_series["date"],
+            y=detail_series[
+                "effective_incoming_stock"
+            ],
+            name="Gelen planlı sevkiyat",
+            marker_color="#2563EB",
+            opacity=0.35,
+        )
+    )
 
     stockout_points = history_series.loc[
         history_series["is_stockout"]
@@ -2282,14 +2314,24 @@ def page_demand_forecast() -> None:
             )
 
     figure.update_layout(
-        title="Geçmiş satış, benchmark ve gelecek zero-shot talep tahmini",
+        title=(
+            "Geçmiş satış, gelecek talep ve "
+            "stokla karşılanabilecek satış"
+        ),
         xaxis_title="Tarih",
         yaxis_title="Adet",
         hovermode="x unified",
+        barmode="overlay",
     )
     st.plotly_chart(
         figure,
         use_container_width=True,
+    )
+    st.caption(
+        "Stokla karşılanabilecek satış = min(tahmin edilen talep, "
+        "gün başı stok + o gün gelen planlı sevkiyat). "
+        "Karşılanamayan talep, stok yetersizliği nedeniyle satışa "
+        "dönüşemeyen tahmini taleptir."
     )
 
     stock_figure = go.Figure()
@@ -2343,6 +2385,7 @@ def page_demand_forecast() -> None:
                 "effective_incoming_stock",
                 "predictions",
                 "available_stock",
+                "fulfilled_demand",
                 "projected_ending_stock",
                 "period_shortage",
                 "recommended_extra_shipment",
