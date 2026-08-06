@@ -254,7 +254,10 @@ DISPLAY_NAMES = {
     "price": "Birim Fiyat (TL)",
     "is_stockout": "Stokta Yok",
     "promotion": "Promosyon",
+    "actual": "Validasyon Gerçek Değeri",
     "predictions": "Model Tahmini",
+    "validation_error": "Tahmin Hatası (Tahmin − Gerçek)",
+    "absolute_error": "Mutlak Hata",
     "forecast_lower": "Alt Güven Sınırı",
     "forecast_upper": "Üst Güven Sınırı",
     "starting_stock": "Başlangıç Stoğu",
@@ -2200,6 +2203,19 @@ def page_demand_forecast() -> None:
     )
     figure.add_trace(
         go.Scatter(
+            x=history_series["date"],
+            y=history_series["demand_adjusted"],
+            name="Düzeltilmiş talep",
+            mode="lines",
+            line={
+                "color": "#7C3AED",
+                "width": 2,
+                "dash": "dot",
+            },
+        )
+    )
+    figure.add_trace(
+        go.Scatter(
             x=future_series["date"],
             y=future_series["forecast_upper"],
             name="Üst güven sınırı",
@@ -2253,8 +2269,30 @@ def page_demand_forecast() -> None:
         )
     )
 
+    stockout_points = history_series.loc[
+        history_series["is_stockout"].astype(bool)
+    ]
+    if not stockout_points.empty:
+        figure.add_trace(
+            go.Scatter(
+                x=stockout_points["date"],
+                y=stockout_points["sales"],
+                name="Stokta yok",
+                mode="markers",
+                marker={
+                    "color": "#DC2626",
+                    "symbol": "x",
+                    "size": 10,
+                    "line": {"width": 2},
+                },
+            )
+        )
+
     figure.update_layout(
-        title="Geçmiş satış ve gelecekte karşılanabilecek talep",
+        title=(
+            "Geçmiş satış, düzeltilmiş talep ve "
+            "gelecekte karşılanabilecek satış"
+        ),
         xaxis_title="Tarih",
         yaxis_title="Adet",
         hovermode="x unified",
@@ -2440,6 +2478,148 @@ def page_forecast_performance() -> None:
         prepare_display_table(
             metrics,
             metric_columns,
+        ),
+        use_container_width=True,
+        hide_index=True,
+    )
+
+    st.subheader("Validasyon: Gerçek değer ve model tahmini")
+    validation_models = sorted(
+        evaluations["model_name"]
+        .dropna()
+        .astype(str)
+        .unique()
+        .tolist()
+    )
+    default_validation_model = (
+        st.session_state.selected_model_name
+        if st.session_state.selected_model_name
+        in validation_models
+        else validation_models[0]
+    )
+    validation_col1, validation_col2 = st.columns(2)
+    validation_model = validation_col1.selectbox(
+        "Validasyon modeli",
+        validation_models,
+        index=validation_models.index(
+            default_validation_model
+        ),
+        key="validation_model",
+    )
+    model_validation = evaluations.loc[
+        evaluations["model_name"].astype(str).eq(
+            validation_model
+        )
+    ].copy()
+    validation_series_options = (
+        model_validation[
+            ["series_id", "store_id", "product_id"]
+        ]
+        .drop_duplicates("series_id")
+        .assign(
+            label=lambda table: (
+                table["store_id"].astype(str)
+                + " / "
+                + table["product_id"].astype(str)
+            )
+        )
+        .sort_values("label")
+    )
+    validation_label = validation_col2.selectbox(
+        "Validasyon mağaza–ürünü",
+        validation_series_options["label"].tolist(),
+        key="validation_series",
+    )
+    validation_series_id = str(
+        validation_series_options.loc[
+            validation_series_options["label"].eq(
+                validation_label
+            ),
+            "series_id",
+        ].iloc[0]
+    )
+    validation_plot = (
+        model_validation.loc[
+            model_validation["series_id"]
+            .astype(str)
+            .eq(validation_series_id)
+        ]
+        .sort_values("date")
+        .copy()
+    )
+    validation_plot["validation_error"] = (
+        validation_plot["predictions"]
+        - validation_plot["actual"]
+    )
+    validation_plot["absolute_error"] = (
+        validation_plot["validation_error"].abs()
+    )
+
+    validation_figure = go.Figure()
+    validation_figure.add_trace(
+        go.Scatter(
+            x=validation_plot["date"],
+            y=validation_plot["actual"],
+            name="Gerçek değer",
+            mode="lines+markers",
+            line={
+                "color": "#2563EB",
+                "width": 3,
+            },
+            marker={"size": 8},
+            hovertemplate=(
+                "Tarih: %{x|%d.%m.%Y}<br>"
+                "Gerçek: %{y:,.2f} adet<extra></extra>"
+            ),
+        )
+    )
+    validation_figure.add_trace(
+        go.Scatter(
+            x=validation_plot["date"],
+            y=validation_plot["predictions"],
+            name="Model tahmini",
+            mode="lines+markers",
+            line={
+                "color": "#F59E0B",
+                "width": 3,
+                "dash": "dash",
+            },
+            marker={"size": 8},
+            hovertemplate=(
+                "Tarih: %{x|%d.%m.%Y}<br>"
+                "Tahmin: %{y:,.2f} adet<extra></extra>"
+            ),
+        )
+    )
+    validation_figure.update_layout(
+        title=f"{validation_label} — validasyon karşılaştırması",
+        xaxis_title="Tarih",
+        yaxis_title="Adet",
+        hovermode="x unified",
+        template="plotly_white",
+        legend={
+            "orientation": "h",
+            "yanchor": "bottom",
+            "y": 1.02,
+            "xanchor": "left",
+            "x": 0,
+        },
+        margin={"t": 95, "r": 20, "b": 45, "l": 45},
+    )
+    st.plotly_chart(
+        validation_figure,
+        use_container_width=True,
+    )
+    st.dataframe(
+        prepare_display_table(
+            validation_plot,
+            [
+                "date",
+                "actual",
+                "predictions",
+                "validation_error",
+                "absolute_error",
+            ],
         ),
         use_container_width=True,
         hide_index=True,
